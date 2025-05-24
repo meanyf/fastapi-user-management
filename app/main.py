@@ -6,10 +6,8 @@ from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from fastapi import HTTPException
 from fastapi import Request
-from sqlalchemy.future import select
 from fastapi import FastAPI, Request, Form
 from fastapi.responses import RedirectResponse
-from sqlalchemy import func
 from app import models
 import httpx
 from app.models import User
@@ -38,19 +36,14 @@ async def fetch_and_save_users(cnt: int, batch_size: int = 500):
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Проверка и создание базы, если нужно
     await ensure_database_exists()
 
-    # Создание таблиц
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
-    # Загрузка начальных данных (опционально)
     await fetch_and_save_users(1000)
 
     yield
-    # Код, который выполняется при завершении (shutdown) 
-    # Можно оставить пустым или добавить очистку ресурсов
 
 app = FastAPI(lifespan=lifespan)
 

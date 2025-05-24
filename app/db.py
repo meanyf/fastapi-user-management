@@ -10,15 +10,12 @@ from app.models import Base, User
 
 load_dotenv()
 
-# Получаем URL основной БД (например, postgresql+asyncpg://user:pass@localhost/mydb)
 DATABASE_URL = os.getenv("DATABASE_URL")
 
-# Разбираем имя БД из URL
 from urllib.parse import urlparse
 parsed_url = urlparse(DATABASE_URL)
-target_db_name = parsed_url.path.lstrip("/")  # Получим mydb
+target_db_name = parsed_url.path.lstrip("/")  
 
-# Системный URL — заменяем имя БД на 'postgres'
 admin_db_url = DATABASE_URL.replace(f"/{target_db_name}", "/postgres")
 
 # Engine к системной базе (postgres)
@@ -61,10 +58,8 @@ async def get_user_from_db(user_id: int):
 async def get_users(page: int = 1, limit: int = 20):
     offset = (page - 1) * limit
     async with SessionLocal() as session:
-        # Получаем пользователей с лимитом и смещением
         result = await session.execute(select(User).offset(offset).limit(limit))
         users = result.scalars().all()
-        # Получаем общее количество пользователей для вычисления количества страниц
         total_users = await session.scalar(select(func.count()).select_from(User))
         total_pages = (total_users + limit - 1) // limit  # округление вверх
         return users, page, total_pages

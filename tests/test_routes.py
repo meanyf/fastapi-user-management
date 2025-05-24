@@ -1,4 +1,3 @@
-# tests/test_minimal.py
 import sys
 import os
 from httpx import AsyncClient

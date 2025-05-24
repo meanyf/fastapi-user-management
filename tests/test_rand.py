@@ -12,7 +12,6 @@ from app.main import app
 @pytest.mark.asyncio
 @respx.mock
 async def test_random_user_page():
-    # Мокаем внешний API
     mock_data = {
     "results": [{
         "gender": "male",
