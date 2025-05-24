@@ -23,7 +23,10 @@ admin_db_url = DATABASE_URL.replace(f"/{target_db_name}", "/postgres")
 admin_engine = create_async_engine(admin_db_url, echo=False)
 
 async def ensure_database_exists():
-    async with admin_engine.begin() as conn:
+    async with admin_engine.connect() as conn:
+        # Включаем autocommit, чтобы CREATE DATABASE можно было выполнить
+        await conn.execution_options(isolation_level="AUTOCOMMIT")
+        
         result = await conn.execute(
             text("SELECT 1 FROM pg_database WHERE datname = :dbname"),
             {"dbname": target_db_name}
