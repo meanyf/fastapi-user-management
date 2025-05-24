@@ -7,10 +7,17 @@ from dotenv import load_dotenv
 from sqlalchemy.future import select
 from sqlalchemy import func
 from app.models import Base, User
+from urllib.parse import urlparse
 
 load_dotenv()
 
-DATABASE_URL = os.getenv("DATABASE_URL")
+raw_url = os.getenv("DATABASE_URL")
+if os.getenv("DOCKER") == "1":
+    parsed = urlparse(raw_url)
+    new_netloc = parsed.netloc.replace("localhost", "db")
+    DATABASE_URL = raw_url.replace(parsed.netloc, new_netloc)
+else:
+    DATABASE_URL = raw_url
 
 from urllib.parse import urlparse
 parsed_url = urlparse(DATABASE_URL)

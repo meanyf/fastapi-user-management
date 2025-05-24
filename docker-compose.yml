@@ -1,0 +1,22 @@
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1
+      POSTGRES_DB: app
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+  web:
+    build: .
+    environment:
+      - DOCKER=1
+      - DATABASE_URL=postgresql+asyncpg://postgres:1@db:5432/fewfewvre
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
