@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Users Table</title>
+    <style>
+        table { border-collapse: collapse; width: 100%; }
+        th, td { padding: 8px; border: 1px solid #ccc; }
+        img { width: 50px; height: 50px; }
+    </style>
+</head>
+<body>
+    <h1>Users List</h1>
+    <form action="/load" method="post">
+        <label for="count">Сколько людей загрузить:</label>
+        <input type="number" id="count" name="count" min="1" required>
+        <button type="submit">Загрузить</button>
+    </form>
+    <div style="margin-top: 20px;">
+    <div>
+        {% if page > 1 %}
+            <a href="/?page={{ page - 1 }}&limit={{ limit }}">← Предыдущая</a>
+        {% endif %}
+        <span> Страница {{ page }} из {{ total_pages }} </span>
+        {% if page < total_pages %}
+            <a href="/?page={{ page + 1 }}&limit={{ limit }}">Следующая →</a>
+        {% endif %}
+    </div>
+</div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Пол</th>
+                <th>Имя</th>
+                <th>Фамилия</th>
+                <th>Телефон</th>
+                <th>Email</th>
+                <th>Место проживания</th>
+                <th>Фото</th>
+                <th>Подробнее</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for user in users %}
+            <tr>
+                <td>{{ user.gender }}</td>
+                <td>{{ user.first_name }}</td>
+                <td>{{ user.last_name }}</td>
+                <td>{{ user.phone }}</td>
+                <td>{{ user.email }}</td>
+                <td>{{ user.location }}</td>
+                <td><img src="{{ user.photo_url }}" alt="photo"></td>
+                <td><a href="/user/{{ user.id }}">Подробнее</a></td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
