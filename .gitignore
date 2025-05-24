@@ -1,0 +1,20 @@
+# Не отслеживать переменные окружения
+.env
+
+# Byte-compiled / cache
+__pycache__/
+*.py[cod]
+*.sqlite3
+
+# VS Code
+.vscode/
+
+# Установленные зависимости
+*.egg-info/
+*.egg
+dist/
+build/
+
+# MacOS, Windows
+.DS_Store
+Thumbs.db
