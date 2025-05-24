@@ -28,15 +28,13 @@ async def fetch_users(batch_size):
 async def fetch_and_save_users(cnt: int, batch_size: int = 500):
     full_batches = cnt // batch_size
     remaining = cnt % batch_size
-
     for _ in range(full_batches):
         users = await fetch_users(batch_size)
         await save_users(users)
 
     if remaining:
-        users = await fetch_users(batch_size)
+        users = await fetch_users(remaining)
         await save_users(users)
- 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
