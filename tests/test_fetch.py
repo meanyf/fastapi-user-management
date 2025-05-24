@@ -1,46 +1,42 @@
-from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
-import httpx
+import respx
+from httpx import Response
+
+import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+from app.main import app 
+
+from app.models import User
+from app.main import fetch_users
+
 
 @pytest.mark.asyncio
-@patch("httpx.AsyncClient.get")
-@patch("app.main.SessionLocal")  # Мокаем фабрику сессий, не AsyncMock, а просто MagicMock
-async def test_fetch_and_save_users(mock_session_local, mock_get):
-    # Мок ответа HTTP
-    mock_get.return_value = AsyncMock(
-        status_code=200,
-        json=AsyncMock(return_value={
-            "results": [
-                {
-                    "gender": "female",
-                    "name": {"first": "Alice", "last": "Smith"},
-                    "email": "alice@example.com",
-                    "phone": "123456789",
-                    "location": {"city": "City", "country": "Country"},
-                    "picture": {"thumbnail": "https://example.com/thumb.jpg"}
-                }
-            ]
-        }),
-        raise_for_status=MagicMock()
+@respx.mock
+async def test_fetch_users_mocked():
+    mock_data = {
+        "results": [
+            {
+                "gender": "male",
+                "name": {"first": "John", "last": "Doe"},
+                "email": "john.doe@example.com",
+                "phone": "123-456-7890",
+                "location": {"city": "New York", "country": "USA"},
+                "picture": {"thumbnail": "http://example.com/photo.jpg"},
+            }
+        ]
+    }
+
+    respx.get("https://randomuser.me/api/", params={"results": "1"}).respond(
+        json=mock_data,
+        status_code=200
     )
 
-    # Мокаем экземпляр сессии с async контекстом
-    mock_session_instance = AsyncMock()
-    # Важно: mock_session_instance должен поддерживать async контекстный менеджер
-    mock_session_instance.__aenter__.return_value = mock_session_instance
-    mock_session_instance.__aexit__.return_value = None
-
-    # Фабрика сессий возвращает мок сессии
-    mock_session_local.return_value = mock_session_instance
-
-    # Вызов функции
-    await fetch_and_save_users(batch_size=1)
-
-    # Проверяем вызов HTTP запроса
-    mock_get.assert_awaited_once_with("https://randomuser.me/api/?results=1")
-
-    # Проверяем, что add был вызван (add — sync метод, поэтому вызывается без await)
-    assert mock_session_instance.add.call_count > 0
-
-    # Проверяем, что commit был await’нут
-    mock_session_instance.commit.assert_awaited_once()
+    users = await fetch_users(batch_size=1)
+    assert len(users) == 1
+    user = users[0]
+    assert isinstance(user, User)
+    assert user.first_name == "John"
+    assert user.last_name == "Doe"
+    assert user.email == "john.doe@example.com"
+    assert user.location == "New York, USA"
